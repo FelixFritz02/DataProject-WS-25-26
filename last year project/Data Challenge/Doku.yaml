@@ -1,0 +1,35 @@
+Doku
+
+Preprocessing:
+    - Scaling of data is necessary, otherwise the neural network for Logistic Network does not work
+       --> without scaling the gradients are really really small --> 0, so we have no convergence
+
+Feature Selection:
+    - Logisitc Regression mit L1 bzw. L2 regularisierung
+    - PCA
+    - Random Forest Feature Selection
+    - Clustering??
+
+Klassifikation
+    - K Nearest Neighbor
+    - Bäume:
+
+    - Logistic Regression:
+        -> über Torch Layer 
+            - verschiedene Loss Funktionen
+            - Regularisierung
+    
+    - Neural Network
+
+Wichtigste Parameter:
+    - Faktoren in Regression
+    - 1 zu 1 Regression
+    - 1- alle regression
+
+Fragen:
+    - Wie bestimme ich Laufzeit bei Modellen die mit GridSearch gefittet werden? Die Zeit kann von den Parametern abhängen und die Parameter sind über die outer Folds verschieden
+    - eSPA for Classification does not work
+    - SVM: Gradient Descent ist schneller als Implementierung mit ungefähr gleicher Genauigkeit
+    - Außreißer bei Cross-Validation für Modellbewertung, momentan wählen wir immmer random_state = 42
+
+
