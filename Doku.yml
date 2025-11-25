@@ -1,1 +1,11 @@
-Noch nichts gemacht!
+1) Data Preprocessing:
+- Removed columns that do not provide useful information (e.g., pets, due to too many None entries):
+  - title
+  - body
+  - amenities
+  - pets_allowed
+  - address
+- TODO: One Hot Encoding for amenities column :
+  - Analyzed unique values in the amenities column to determine appropriate encoding strategy.
+
+2) TODO: Clustering to longitude and latitude:
