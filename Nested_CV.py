@@ -44,7 +44,7 @@ class NestedCVRegressor:
                     param_grid=self.param_grid,
                     scoring="neg_mean_squared_error",
                     cv=inner_cv,
-                    n_jobs=1,
+                    n_jobs=-1,
 
                 )
             X_train, X_test = X[train_ix], X[test_ix]
