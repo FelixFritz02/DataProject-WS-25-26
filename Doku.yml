@@ -1,11 +1,15 @@
-1) Data Preprocessing:
-- Removed columns that do not provide useful information (e.g., pets, due to too many None entries):
-  - title
-  - body
-  - amenities
-  - pets_allowed
-  - address
-- TODO: One Hot Encoding for amenities column :
-  - Analyzed unique values in the amenities column to determine appropriate encoding strategy.
+other in der pipeline einfügen (Dr. Fritz)
+nichtlearität in der regression
 
-2) TODO: Clustering to longitude and latitude:
+Datenstruktur: 
+- States Target encoded
+- Citynames Target encoded
+- Cluster raus
+- Daten -> preprocessed_apartment_rentals_no_state_dummies_nocluster
+
+Geschichte:
+- zuerst targret encoding der cities
+-> gemerkt zu viele mit wenigen Datenpunkte -> Problem der schlechten vorhersage bei Schloss und Hundehütte
+-> Idee other setzen -> predition dann auf others
+-> Achuntg data Leakage: -> mache Stadtencoding also nur für Trainigsdaten
+
