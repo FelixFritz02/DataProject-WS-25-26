@@ -4,12 +4,13 @@ import pandas as pd
 from sklearn.model_selection import KFold, GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, QuantileTransformer
 from category_encoders.target_encoder import TargetEncoder
 
 class NestedCVRegressorWithTargetEncoding:
 
     def __init__(self, model, param_grid, encode_cols=None,
-                 outer_splits=5, inner_splits=5, random_state=42, n_jobs=-1):
+                 outer_splits=5, inner_splits=5, random_state=42, n_jobs=-1, scaler = StandardScaler):
         self.model = model
         self.param_grid = param_grid
         self.encode_cols = encode_cols if encode_cols is not None else []
@@ -17,6 +18,7 @@ class NestedCVRegressorWithTargetEncoding:
         self.inner_splits = inner_splits
         self.random_state = random_state
         self.n_jobs = n_jobs
+        self.scaler = scaler()
 
         # Ergebnisse
         self.outer_mse = []
@@ -29,10 +31,11 @@ class NestedCVRegressorWithTargetEncoding:
         steps = []
         if self.encode_cols:
             steps.append(("encode", TargetEncoder(cols=self.encode_cols)))
+        steps.append(("scaler", self.scaler))
         steps.append(("model", self.model))
         return Pipeline(steps)
 
-    def filter_cities(self, X, threshold=50):
+    def filter_cities(self, X, threshold=30):
         """Rare Label Encoding für die 'City' Spalte."""
         X_filtered = X.copy()
         if 'cityname' in X_filtered.columns:
