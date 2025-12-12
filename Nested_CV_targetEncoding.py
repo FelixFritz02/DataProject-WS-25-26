@@ -32,6 +32,16 @@ class NestedCVRegressorWithTargetEncoding:
         steps.append(("model", self.model))
         return Pipeline(steps)
 
+    def filter_cities(self, X, threshold=50):
+        """Rare Label Encoding für die 'City' Spalte."""
+        X_filtered = X.copy()
+        if 'cityname' in X_filtered.columns:
+            city_counts = X_filtered['cityname'].value_counts()
+            cities_to_keep = city_counts[city_counts >= threshold].index
+            X_filtered['cityname'] = X_filtered['cityname'].apply(lambda x: x if x in cities_to_keep else 'Other')
+        return X_filtered
+
+
     def run(self, X, y, output=False):
         """Führt Nested Cross Validation aus mit Target-Encoding für encode_cols"""
 
@@ -50,6 +60,8 @@ class NestedCVRegressorWithTargetEncoding:
             outer_fold += 1
             X_train, X_test = X_values.iloc[train_ix], X_values.iloc[test_ix]
             y_train, y_test = y_values[train_ix], y_values[test_ix]
+
+            X_train = self.filter_cities(X_train)
 
             # Pipeline erzeugen
             pipe = self._make_pipeline()
