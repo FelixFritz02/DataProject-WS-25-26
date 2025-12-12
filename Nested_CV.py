@@ -19,24 +19,47 @@ class NestedCVRegressor:
         self.outer_mse = []
         self.outer_r2 = []
         self.best_params = []
-        self.fit_times = []   # <-- Neue Liste
+        self.fit_times = []
 
-    def run(self, X, y, output = False):
+    def run(self, X, y, output=False):
         """Führt Nested Cross Validation aus"""
         
         outer_cv = KFold(n_splits=self.outer_splits, shuffle=True, random_state=0)
         inner_cv = KFold(n_splits=self.inner_splits, shuffle=True, random_state=1)
         outer_fold = 0
+
+        # ---- NEU: Datentyp feststellen ----
+        X_is_df = isinstance(X, pd.DataFrame)
+        y_is_series = isinstance(y, pd.Series)
+
         for train_ix, test_ix in outer_cv.split(X):
-            outer_fold = outer_fold +1
-            if output == True:
+            outer_fold += 1
+
+            # ----------- NEU: Pandas-kompatibles Indexing ------------
+            if X_is_df:
+                X_train = X.iloc[train_ix]
+                X_test  = X.iloc[test_ix]
+            else:
+                X_train = X[train_ix]
+                X_test  = X[test_ix]
+
+            if y_is_series:
+                y_train = y.iloc[train_ix].values
+                y_test  = y.iloc[test_ix].values
+            else:
+                y_train = y[train_ix]
+                y_test  = y[test_ix]
+            # ---------------------------------------------------------
+
+            # Inner CV + hyperparameter tuning
+            if output:
                 grid_search = GridSearchCV(
                     estimator=self.model,
                     param_grid=self.param_grid,
                     scoring="neg_mean_squared_error",
                     cv=inner_cv,
                     n_jobs=1,
-                    verbose = 2
+                    verbose=2
                 )
             else:
                 grid_search = GridSearchCV(
@@ -44,13 +67,9 @@ class NestedCVRegressor:
                     param_grid=self.param_grid,
                     scoring="neg_mean_squared_error",
                     cv=inner_cv,
-                    n_jobs=-1,
-
+                    n_jobs=-1
                 )
-            X_train, X_test = X[train_ix], X[test_ix]
-            y_train, y_test = y[train_ix], y[test_ix]
 
-            # Inner CV + hyperparameter tuning
             grid_search.fit(X_train, y_train)
 
             # beste hyperparameter sichern
@@ -71,13 +90,14 @@ class NestedCVRegressor:
 
             self.outer_mse.append(mean_squared_error(y_test, y_pred))
             self.outer_r2.append(r2_score(y_test, y_pred))
-            # Statusmeldung pro Outer-Fold
+
             if output:
-                print(f"Outer Fold {outer_fold}/{self.outer_splits} | "
+                print(
+                    f"Outer Fold {outer_fold}/{self.outer_splits} | "
                     f"Best Params: {best_params} | "
                     f"Fit Time: {end - start:.3f}s | "
-                    f"Outer R²: {self.outer_r2[-1]:.3f} | MSE: {self.outer_mse[-1]:.3f}")
-
+                    f"Outer R²: {self.outer_r2[-1]:.3f} | MSE: {self.outer_mse[-1]:.3f}"
+                )
 
     # Getter Methoden
     def get_mse_scores(self):
@@ -90,7 +110,6 @@ class NestedCVRegressor:
         return self.best_params
 
     def get_fit_times(self):
-        """ Zeit des Modells welches für den betrachteten Outer Fold die besten besten Parameter zeigt"""
         return self.fit_times
 
     def get_mean_mse(self):
@@ -105,33 +124,29 @@ class NestedCVRegressor:
     def plot_scores(self, title=None):
         sns.set_theme(style="whitegrid")
 
-        # DataFrame wie gehabt erstellen (angenommen, die Listen sind bereits da)
         df = pd.DataFrame({
             "R²": self.outer_r2,
             "MSE": self.outer_mse,
             "Fit Time (s)": self.fit_times
         })
 
-        # Wide → Long Format für Seaborn
         df_long = df.melt(var_name="Metric", value_name="Value")
 
-        # Verwenden von sns.catplot mit 'col' und 'free_y'
         g = sns.catplot(
             x="Metric",
             y="Value",
-            col="Metric",         # Erstellt für jede "Metric" eine separate Spalte (Facet)
+            col="Metric",
             data=df_long,
-            kind="box",           # Stellt den Plot als Boxplot dar
-            col_wrap=3,           # Zeigt alle 3 Plots in einer Zeile
-            sharex=False,         # Wichtig: Jede Achse ist unabhängig
-            sharey=False,         # Wichtig: Jede Achse hat eine freie Skala
+            kind="box",
+            col_wrap=3,
+            sharex=False,
+            sharey=False,
             palette="Set2",
-            height=5,             # Höhe jedes Unterplots
+            height=5,
             aspect=0.8
         )
 
-        # Passen Sie die Layouts an, um Überlappungen zu vermeiden
-        g.set_axis_labels("", "Wert")      # Entfernt die x-Achsenbeschriftung und vereinfacht die y-Beschriftung
-    
+        g.set_axis_labels("", "Wert")
         plt.show()
+
         
