@@ -18,7 +18,10 @@ class NestedCVRegressorWithTargetEncoding:
         self.inner_splits = inner_splits
         self.random_state = random_state
         self.n_jobs = n_jobs
-        self.scaler = scaler()
+        if scaler is not None:
+            self.scaler = scaler()
+        else:
+            self.scaler = None
 
         # Ergebnisse
         self.outer_mse = []
@@ -31,11 +34,12 @@ class NestedCVRegressorWithTargetEncoding:
         steps = []
         if self.encode_cols:
             steps.append(("encode", TargetEncoder(cols=self.encode_cols)))
-        steps.append(("scaler", self.scaler))
+        if self.scaler is not None:
+            steps.append(("scaler", self.scaler))
         steps.append(("model", self.model))
         return Pipeline(steps)
 
-    def filter_cities(self, X, threshold=30):
+    def filter_cities(self, X, threshold=0):
         """Rare Label Encoding für die 'City' Spalte."""
         X_filtered = X.copy()
         if 'cityname' in X_filtered.columns:
