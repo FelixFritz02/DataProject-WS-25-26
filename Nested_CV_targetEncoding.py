@@ -49,7 +49,7 @@ class NestedCVRegressorWithTargetEncoding:
         return X_filtered
 
 
-    def run(self, X, y, output=False):
+    def run(self, X, y, output=False, log_transform=False):
         """Führt Nested Cross Validation aus mit Target-Encoding für encode_cols"""
 
         # Pandas-Support
@@ -100,9 +100,15 @@ class NestedCVRegressorWithTargetEncoding:
 
             # Evaluate
             y_pred = best_model.predict(X_test)
-            self.outer_mse.append(mean_squared_error(y_test, y_pred))
-            self.outer_r2.append(r2_score(y_test, y_pred))
-
+            if log_transform:
+                y_test_exp = np.expm1(y_test)
+                y_pred_exp = np.expm1(y_pred)
+                self.outer_mse.append(mean_squared_error(y_test_exp, y_pred_exp))
+                self.outer_r2.append(r2_score(y_test_exp, y_pred_exp))
+            else:
+                self.outer_mse.append(mean_squared_error(y_test, y_pred))
+                self.outer_r2.append(r2_score(y_test, y_pred))
+                
             if output:
                 print(f"Outer Fold {outer_fold}/{self.outer_splits} | "
                       f"Best Params: {best_params} | "
