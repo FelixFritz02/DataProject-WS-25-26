@@ -6,6 +6,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, QuantileTransformer
 from category_encoders.target_encoder import TargetEncoder
+import xgboost as xgb
+
 
 class NestedCVRegressorWithTargetEncoding:
 
@@ -39,13 +41,15 @@ class NestedCVRegressorWithTargetEncoding:
         steps.append(("model", self.model))
         return Pipeline(steps)
 
-    def filter_cities(self, X, threshold=0):
+    def filter_cities(self, X, threshold=30):
         """Rare Label Encoding für die 'City' Spalte."""
         X_filtered = X.copy()
         if 'cityname' in X_filtered.columns:
             city_counts = X_filtered['cityname'].value_counts()
             cities_to_keep = city_counts[city_counts >= threshold].index
             X_filtered['cityname'] = X_filtered['cityname'].apply(lambda x: x if x in cities_to_keep else 'Other')
+            if isinstance(self.model, xgb.XGBRegressor):
+                X_filtered['cityname'] = X_filtered['cityname'].astype('category')
         return X_filtered
 
 
