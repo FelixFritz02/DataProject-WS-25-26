@@ -12,7 +12,7 @@ import xgboost as xgb
 class NestedCVRegressorWithTargetEncoding:
 
     def __init__(self, model, param_grid, encode_cols=None,
-                 outer_splits=5, inner_splits=5, random_state=42, n_jobs=1, scaler = StandardScaler):
+                 outer_splits=5, inner_splits=5, random_state=42, n_jobs=-1, scaler = StandardScaler):
         self.model = model
         self.param_grid = param_grid
         self.encode_cols = encode_cols if encode_cols is not None else []
